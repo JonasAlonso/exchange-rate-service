@@ -3,6 +3,7 @@ package com.business.keeper.exchangerateservice.service.impl;
 import com.business.keeper.exchangerateservice.facade.ExchangeRatesClient;
 import com.business.keeper.exchangerateservice.model.*;
 import com.business.keeper.exchangerateservice.service.ExchangeRateService;
+import com.business.keeper.exchangerateservice.service.HistoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,24 +19,28 @@ import java.util.TreeMap;
 public class ExchangeRateServiceImpl implements ExchangeRateService {
 
     private ExchangeRatesClient exchangeRatesClient;
+    private HistoryService historyService;
 
     @Autowired
-    public ExchangeRateServiceImpl(ExchangeRatesClient exchangeRatesClient){
+    public ExchangeRateServiceImpl(ExchangeRatesClient exchangeRatesClient, HistoryService historyService){
         this.exchangeRatesClient = exchangeRatesClient;
+        this.historyService = historyService;
     }
 
     @Override
-    public ExchangeRateResult getExchangeRateForGivenDateAndCurrencies(String date, Currency baseCurrency, Currency targetCurrency) {
+    public ExchangeRateResultDto getExchangeRateForGivenDateAndCurrencies(String date, Currency baseCurrency, Currency targetCurrency) {
         LocalDate startDate = LocalDate.parse(date).minusDays(5);
         ResponseEntity<HistoryExchangeRateAPIResponse> historical = exchangeRatesClient.getHistoricalExchangeRate(startDate.toString(), date, baseCurrency, targetCurrency);
         ResponseEntity<ExchangeRatesAPIResponse> res = exchangeRatesClient.getExchangeRateForADate(date, baseCurrency, targetCurrency);
 
-        return ExchangeRateResult.builder().base(baseCurrency)
+        ExchangeRateResultDto result = ExchangeRateResultDto.builder().base(baseCurrency)
                 .exchangeRate(res.getBody().getRates().get(targetCurrency))
                 .target(targetCurrency)
                 .average(calculateAverage(historical.getBody(), targetCurrency))
                 .trend(determineRateTrend(historical.getBody().getRates(), targetCurrency))
                 .build();
+        historyService.createHistoryEntry(result);
+        return result;
     }
 
     @Override

@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public interface ExchangeRateService {
-    ExchangeRateResult getExchangeRateForGivenDateAndCurrencies(String date, Currency baseCurrency, Currency targetCurrency);
+    ExchangeRateResultDto getExchangeRateForGivenDateAndCurrencies(String date, Currency baseCurrency, Currency targetCurrency);
 
     Double calculateAverage(HistoryExchangeRateAPIResponse historyExchangeRateAPIResponse, Currency target);
 
