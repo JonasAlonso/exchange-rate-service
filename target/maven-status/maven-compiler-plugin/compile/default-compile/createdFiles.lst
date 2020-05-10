@@ -1,1 +1,14 @@
+com/business/keeper/exchangerateservice/controller/ExchangeRateController.class
+com/business/keeper/exchangerateservice/model/ErrorDto.class
+com/business/keeper/exchangerateservice/facade/ExchangeRatesClient.class
+com/business/keeper/exchangerateservice/controller/ControllerAdvice.class
+com/business/keeper/exchangerateservice/model/ExchangeRatesAPIResponse.class
+com/business/keeper/exchangerateservice/model/ExchangeRateResult$ExchangeRateResultBuilder.class
+com/business/keeper/exchangerateservice/model/RateTrend.class
+com/business/keeper/exchangerateservice/model/ErrorDto$ErrorDtoBuilder.class
+com/business/keeper/exchangerateservice/model/Currency.class
+com/business/keeper/exchangerateservice/model/HistoryExchangeRateAPIResponse.class
+com/business/keeper/exchangerateservice/model/ExchangeRateResult.class
+com/business/keeper/exchangerateservice/service/ExchangeRateService.class
+com/business/keeper/exchangerateservice/service/impl/ExchangeRateServiceImpl.class
 com/business/keeper/exchangerateservice/ExchangeRateServiceApplication.class
