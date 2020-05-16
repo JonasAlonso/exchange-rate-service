@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.Map;
@@ -44,29 +45,32 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     }
 
     @Override
-    public Double calculateAverage(HistoryExchangeRateAPIResponse historyExchangeRateAPIResponse, Currency target){
-        TreeMap<LocalDate, Map<Currency, Double>> rates = historyExchangeRateAPIResponse.getRates();
+    public BigDecimal calculateAverage(HistoryExchangeRateAPIResponse historyExchangeRateAPIResponse, Currency target){
+        TreeMap<LocalDate, Map<Currency, BigDecimal>> rates = historyExchangeRateAPIResponse.getRates();
         LocalDate end = historyExchangeRateAPIResponse.getEnd_at();
         LocalDate start = historyExchangeRateAPIResponse.getStart_at();
         Currency base = historyExchangeRateAPIResponse.getBase();
 
-        Double sum = 0.0;
+        BigDecimal sum = BigDecimal.valueOf(0.0);
         int count = 0;
 
         log.info("Calculating the average rate between {} and {} for currencies: {},{}",start,end,base, target);
         for (LocalDate date = start; date.isBefore(end); date = date.plusDays(1)){
             if (rates.containsKey(date)){
                 count++;
-                sum = sum + rates.get(date).get(target);
+                sum = sum.add(rates.get(date).get(target));
+                //sum = sum + rates.get(date).get(target);
             }
         }
-        log.info("Calculated sum: {}. Calculated average: {}", sum, (count==0)? 0: sum/count);
 
-        return ((count==0) ? 0.0 : sum/count);
+
+        log.info("Calculated sum: {}. Calculated average: {}", sum, (count==0)? 0: sum.divide(BigDecimal.valueOf(count)));
+
+        return ((count==0) ? BigDecimal.valueOf(0.0) : sum.divide(BigDecimal.valueOf(count)));
     }
 
     @Override
-    public RateTrend determineRateTrend(TreeMap<LocalDate, Map<Currency, Double>> rates, Currency target) {
+    public RateTrend determineRateTrend(TreeMap<LocalDate, Map<Currency, BigDecimal>> rates, Currency target) {
         if (isAscending(rates,target)){
             return RateTrend.ASCENDING;
         } else if (isDescending(rates,target)){
@@ -77,17 +81,17 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
         return RateTrend.UNDEFINED;
     }
 
-    private boolean isAscending(TreeMap<LocalDate, Map<Currency, Double>> rates, Currency target){
+    private boolean isAscending(TreeMap<LocalDate, Map<Currency, BigDecimal>> rates, Currency target){
         boolean isAscending = true;
-        Iterator<Map.Entry<LocalDate, Map<Currency, Double>>> entries = rates.entrySet().iterator();
-        Map.Entry<LocalDate, Map<Currency, Double>> entry = entries.next();
-        Map.Entry<LocalDate, Map<Currency, Double>> next;
+        Iterator<Map.Entry<LocalDate, Map<Currency, BigDecimal>>> entries = rates.entrySet().iterator();
+        Map.Entry<LocalDate, Map<Currency, BigDecimal>> entry = entries.next();
+        Map.Entry<LocalDate, Map<Currency, BigDecimal>> next;
 
         while(isAscending && entries.hasNext()){
             next = entries.next();
 
             log.info("Calculating trend between {} and {}. ",entry.getValue(), next.getValue());
-            if (entry.getValue().get(target) > next.getValue().get(target)){
+            if (entry.getValue().get(target).compareTo(next.getValue().get(target))>=0){
                 isAscending = false;
             }
             entry = next;
@@ -96,15 +100,15 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
         return isAscending;
     }
 
-    private boolean isDescending(TreeMap<LocalDate, Map<Currency, Double>> rates, Currency target){
+    private boolean isDescending(TreeMap<LocalDate, Map<Currency, BigDecimal>> rates, Currency target){
         boolean isDescending = true;
-        Iterator<Map.Entry<LocalDate, Map<Currency, Double>>> entries = rates.entrySet().iterator();
-        Map.Entry<LocalDate, Map<Currency, Double>> entry = entries.next();
-        Map.Entry<LocalDate, Map<Currency, Double>> next;
+        Iterator<Map.Entry<LocalDate, Map<Currency, BigDecimal>>> entries = rates.entrySet().iterator();
+        Map.Entry<LocalDate, Map<Currency, BigDecimal>> entry = entries.next();
+        Map.Entry<LocalDate, Map<Currency, BigDecimal>> next;
 
         while(isDescending && entries.hasNext()){
             next = entries.next();
-            if (entry.getValue().get(target) < next.getValue().get(target)){
+            if (entry.getValue().get(target).compareTo(next.getValue().get(target))<=0){
                 isDescending = false;
             }
             entry = next;
@@ -114,15 +118,15 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
         return isDescending;
     }
 
-    private boolean isConstant(TreeMap<LocalDate, Map<Currency, Double>> rates, Currency target){
+    private boolean isConstant(TreeMap<LocalDate, Map<Currency, BigDecimal>> rates, Currency target){
         boolean isConstant = true;
-        Iterator<Map.Entry<LocalDate, Map<Currency, Double>>> entries = rates.entrySet().iterator();
-        Map.Entry<LocalDate, Map<Currency, Double>> entry = entries.next();
-        Map.Entry<LocalDate, Map<Currency, Double>> next;
+        Iterator<Map.Entry<LocalDate, Map<Currency, BigDecimal>>> entries = rates.entrySet().iterator();
+        Map.Entry<LocalDate, Map<Currency, BigDecimal>> entry = entries.next();
+        Map.Entry<LocalDate, Map<Currency, BigDecimal>> next;
 
         while(isConstant && entries.hasNext()){
             next = entries.next();
-            if (entry.getValue().get(target) != next.getValue().get(target)){
+            if (entry.getValue().get(target).compareTo(next.getValue().get(target))!=0){
                 isConstant = false;
             }
             entry = next;
