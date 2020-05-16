@@ -1,2 +1,3 @@
 com/business/keeper/exchangerateservice/facade/ExchangeRatesClientTest.class
+com/business/keeper/exchangerateservice/service/ExchangeRateServiceTest.class
 com/business/keeper/exchangerateservice/ExchangeRateServiceApplicationTests.class
